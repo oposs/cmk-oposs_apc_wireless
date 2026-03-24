@@ -35,7 +35,7 @@ def _form_spec_temperature():
 rule_spec_oposs_apc_wireless_temperature = CheckParameters(
     name="oposs_apc_wireless_temperature",
     title=Title("APC Wireless Temperature Levels"),
-    topic=Topic.ENVIRONMENT,
+    topic=Topic.ENVIRONMENTAL,
     parameter_form=_form_spec_temperature,
     condition=HostAndItemCondition(item_title=Title("Sensor name")),
 )
@@ -71,7 +71,7 @@ def _form_spec_humidity():
 rule_spec_oposs_apc_wireless_humidity = CheckParameters(
     name="oposs_apc_wireless_humidity",
     title=Title("APC Wireless Humidity Levels"),
-    topic=Topic.ENVIRONMENT,
+    topic=Topic.ENVIRONMENTAL,
     parameter_form=_form_spec_humidity,
     condition=HostAndItemCondition(item_title=Title("Sensor name")),
 )
