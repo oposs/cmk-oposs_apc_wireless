@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 ### Fixed
+
+## 0.1.2 - 2026-04-27
+### Fixed
 - Metric translations for legacy stock-Checkmk `apc_symmetra_temp_wireless`
   / `apc_humidity_wireless` history are now keyed on the new
   `oposs_apc_wireless_temperature` / `oposs_apc_wireless_humidity` check
