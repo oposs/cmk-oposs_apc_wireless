@@ -55,4 +55,4 @@ snmpwalk -v2c -c <community> <host> .1.3.6.1.4.1.318.1.1.10.5.1.1.1
 
 ## License
 
-MIT - OETIKER+PARTNER AG
+GNU General Public License v2 - OETIKER+PARTNER AG. See [LICENSE](LICENSE).
