@@ -31,7 +31,8 @@ def parse_oposs_apc_wireless(string_table: list) -> Section:
             temp = None
         try:
             humidity = int(row[2])
-            if humidity < 0:
+            # A temperature-only sensor (NBWS100T) reports 0
+            if humidity <= 0:
                 humidity = None
             else:
                 humidity = float(humidity)
