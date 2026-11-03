@@ -46,7 +46,7 @@ snmp_section_oposs_apc_wireless = SimpleSNMPSection(
     detect=startswith(".1.3.6.1.2.1.1.2.0", ".1.3.6.1.4.1.318.1.3"),
     fetch=SNMPTree(
         base=".1.3.6.1.4.1.318.1.1.10.5.1.1.1",
-        oids=["3", "5", "6"],
+        oids=["3", "5", "8"],  # Name, Temperature, Humidity
     ),
     parse_function=parse_oposs_apc_wireless,
 )

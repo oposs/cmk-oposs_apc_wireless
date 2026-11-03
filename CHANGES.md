@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   text, which contradicted them.
 
 ### Fixed
+- The "Humidity" services showed the sensor's high temperature threshold
+  in tenths of a degree (for example 300% for a threshold of 30.0 °C)
+  instead of the measured humidity, so they were usually CRIT. They now
+  show the humidity the sensor reports; the graph keeps the wrong values
+  from before the update.
 
 ## 0.1.2 - 2026-04-27
 ### Fixed

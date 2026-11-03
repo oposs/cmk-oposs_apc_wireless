@@ -112,9 +112,6 @@ def test_fetches_the_wireless_sensor_table(check):
     assert [o.column for o in fetch.oids][:2] == ["3", "5"]  # Name, Temperature
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "BUG: humidity is fetched from column 6 (wirelessSensorStatusHighTempThresh), "
-    "not column 8 (wirelessSensorStatusHumidity)"))
 def test_fetches_humidity_from_the_humidity_column(check):
     fetch = _fetch(check)
     assert [o.column for o in fetch.oids] == ["3", "5", "8"]
