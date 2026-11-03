@@ -9,6 +9,10 @@ from cmk.agent_based.v2 import (
     startswith,
 )
 
+# Create release PR writes the released version here (version_files in
+# .github/repo-infra.json)
+__version__ = "unreleased"
+
 Section = dict[str, dict[str, float | None]]
 
 

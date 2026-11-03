@@ -1,6 +1,13 @@
 {
   "moving_major_tag": false,
-  "version_files": [],
+  "version_files": [
+    {
+      "path": "local/lib/python3/cmk_addons/plugins/oposs_apc_wireless/agent_based/oposs_apc_wireless.py",
+      "pattern": "^__version__ = \"[^\"]*\"",
+      "replacement": "__version__ = \"$VERSION\"",
+      "verify": "^__version__ = \"$VERSION\""
+    }
+  ],
   "release_assets": [
     "oposs_apc_wireless-*.mkp"
   ]
