@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   instead of the measured humidity, so they were usually CRIT. They now
   show the humidity the sensor reports; the graph keeps the wrong values
   from before the update.
+- Temperature-only wireless sensors got a "Humidity" service that was
+  CRIT at 0%. Such a service is now UNKNOWN with "Item not found in
+  monitoring data" and shows as vanished in the service discovery; remove
+  it there.
 
 ## 0.1.2 - 2026-04-27
 ### Fixed
