@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-
-from typing import Any, Dict, Optional
-
 from cmk.agent_based.v2 import (
     CheckPlugin,
     CheckResult,
@@ -13,7 +9,7 @@ from cmk.agent_based.v2 import (
     startswith,
 )
 
-Section = Dict[str, Dict[str, Optional[float]]]
+Section = dict[str, dict[str, float | None]]
 
 
 def parse_oposs_apc_wireless(string_table: list) -> Section:
@@ -74,7 +70,7 @@ def check_oposs_apc_wireless_temperature(
         value=data["temperature"],
         levels_upper=params.get("levels"),
         metric_name="oposs_apc_temperature",
-        render_func=lambda v: "%.1f \u00b0C" % v,
+        render_func=lambda v: f"{v:.1f} \u00b0C",
         label="Temperature",
     )
 
@@ -113,7 +109,7 @@ def check_oposs_apc_wireless_humidity(
         levels_upper=params.get("levels_upper"),
         levels_lower=params.get("levels_lower"),
         metric_name="oposs_apc_humidity",
-        render_func=lambda v: "%.0f%%" % v,
+        render_func=lambda v: f"{v:.0f}%",
         label="Humidity",
     )
 
