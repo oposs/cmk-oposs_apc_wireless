@@ -9,7 +9,8 @@ Migrated from oegig-plugins to Checkmk 2.3.x v2 API.
 - `local/lib/python3/cmk_addons/plugins/oposs_apc_wireless/graphing/apc_wireless.py` — metric, graph, perfometer definitions
 - `local/lib/python3/cmk_addons/plugins/oposs_apc_wireless/rulesets/apc_wireless.py` — WATO ruleset definitions for threshold configuration
 - `.mkp-builder.ini` — MKP packaging config
-- `.github/workflows/release.yml` — automated release workflow
+- `.github/workflows/` — CI and the release flow, callers of the oposs/repo-infra pieces; `.github/repo-infra.json` configures them
+- `tests/` — pytest against the real Checkmk 2.3.0 API (`tests/conftest.py` fetches it into `.cmk-api/`)
 
 ## Architecture
 
