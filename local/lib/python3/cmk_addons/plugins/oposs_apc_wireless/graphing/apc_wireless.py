@@ -1,14 +1,12 @@
-#!/usr/bin/env python3
-
 from cmk.graphing.v1 import Title
+from cmk.graphing.v1.graphs import Graph, MinimalRange
 from cmk.graphing.v1.metrics import (
     Color,
     DecimalNotation,
     Metric,
     Unit,
 )
-from cmk.graphing.v1.graphs import Graph, MinimalRange
-from cmk.graphing.v1.perfometers import Perfometer, FocusRange, Closed
+from cmk.graphing.v1.perfometers import Closed, FocusRange, Perfometer
 
 # Units
 unit_celsius = Unit(DecimalNotation("\u00b0C"))
