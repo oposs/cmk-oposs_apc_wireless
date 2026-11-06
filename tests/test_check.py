@@ -111,9 +111,6 @@ def test_fetches_the_wireless_sensor_table(check):
     assert [o.column for o in fetch.oids][:2] == ["3", "5"]  # Name, Temperature
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "BUG: humidity is fetched from column 6 (wirelessSensorStatusHighTempThresh), "
-    "not column 8 (wirelessSensorStatusHumidity)"))
 def test_fetches_humidity_from_the_humidity_column(check):
     fetch = _fetch(check)
     assert [o.column for o in fetch.oids] == ["3", "5", "8"]
@@ -122,7 +119,7 @@ def test_fetches_humidity_from_the_humidity_column(check):
 def test_parse_real_walk(check):
     assert check.parse_oposs_apc_wireless([TOP, BOTTOM]) == {
         "Rack 12 top": {"temperature": 23.1, "humidity": 41.0},
-        "Rack 12 bottom": {"temperature": 22.4, "humidity": 0.0},
+        "Rack 12 bottom": {"temperature": 22.4, "humidity": None},
     }
 
 
@@ -177,9 +174,6 @@ def test_discover_humidity_sensor(check):
     assert list(check.discover_oposs_apc_wireless_humidity(section)) == [Service(item="Rack 12 top")]
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "BUG: a temperature-only sensor (NBWS100T) reports humidity 0 and gets a "
-    "Humidity service that is CRIT at 0%"))
 def test_temperature_only_sensor_has_no_humidity_service(check):
     section = check.parse_oposs_apc_wireless([BOTTOM])
     assert list(check.discover_oposs_apc_wireless_humidity(section)) == []
