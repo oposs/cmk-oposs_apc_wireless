@@ -23,7 +23,6 @@ import re
 import sys
 
 import pytest
-
 from cmk.agent_based.v2 import Metric, Result, Service, State
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -294,6 +293,15 @@ def test_check_plugins(check):
 # ---------------------------------------------------------------------------
 # Version
 # ---------------------------------------------------------------------------
+
+def test_check_carries_the_released_version():
+    # The publish check fails on main when a version file disagrees with
+    # the newest released CHANGES.md heading.
+    check = ROOT / "local/lib/python3/cmk_addons/plugins/oposs_apc_wireless/agent_based/oposs_apc_wireless.py"
+    released = re.search(r"^## (\d+\.\d+\.\d+)", (ROOT / "CHANGES.md").read_text(),
+                         flags=re.MULTILINE).group(1)
+    assert re.search(rf'^__version__ = "{re.escape(released)}"$', check.read_text(), flags=re.MULTILINE)
+
 
 def test_release_writes_version_into_check(tmp_path):
     """Apply the version_files entry of .github/repo-infra.json to the check
