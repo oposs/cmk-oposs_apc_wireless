@@ -6,6 +6,11 @@ plugin fetches plus sysDescr and sysObjectID, and anonymized: the serial
 number in sysDescr and the sensor name (it carries the sensor's radio
 address) are replaced.
 
+In the walk that sensor is inactive: wirelessSensorStatusCommStatus (column
+11) is inactive(0) and wirelessSensorStatusAlarmStatus (column 23) is 4096,
+bit 13 "sensor inactive". The plugin does not fetch these columns, so they
+are left out below.
+
 For comparison the same walk shows the wired probe of the rack monitor at
 33 °C and 22 % in emsProbeStatusTable (.1.3.6.1.4.1.318.1.1.10.3.13) and in
 the table Checkmk's own apc_symmetra_temp and apc_humidity read

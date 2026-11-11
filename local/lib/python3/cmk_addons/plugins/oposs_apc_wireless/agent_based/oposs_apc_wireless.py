@@ -22,7 +22,10 @@ Section = dict[str, dict[str, float | bool | None]]
 _FAHRENHEIT = "2"
 
 # What a NetBotz 250 reports as wirelessSensorStatusTemperature for a sensor
-# it has no reading from (seen on a real NBRK0250, humidity -1 alongside)
+# it has no reading from. Seen on a real NBRK0250 for an inactive sensor:
+# humidity -1, wirelessSensorStatusCommStatus inactive(0) and
+# wirelessSensorStatusAlarmStatus 0x1000 (sensor inactive). The MIB names
+# no such value.
 _NO_READING = -2147483647
 
 
