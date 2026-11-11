@@ -42,7 +42,7 @@ def declared(graphing_objects):
 @pytest.fixture(scope="module")
 def emitted(check):
     """Every metric the two checks yield for a sensor with both readings."""
-    section = check.parse_oposs_apc_wireless([["Rack 12 top", "231", "41"]])
+    section = check.parse_oposs_apc_wireless([[["Rack 12 top", "231", "41"]], [["1"]]])
     out = list(check.check_oposs_apc_wireless_temperature(
         "Rack 12 top", check.check_plugin_oposs_apc_wireless_temperature.check_default_parameters, section))
     out += list(check.check_oposs_apc_wireless_humidity(

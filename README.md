@@ -18,6 +18,10 @@ starts with `.1.3.6.1.4.1.318.1.3`.
 
 Sensor data is fetched from the wireless sensor table at
 `.1.3.6.1.4.1.318.1.1.10.5.1.1.1` (columns: name, temperature, humidity).
+The sensors report temperatures in the scale the device is set to; the
+plugin reads that scale from `emsStatusSysTempUnits`
+(`.1.3.6.1.4.1.318.1.1.10.3.12.11.0`) and converts Fahrenheit to Celsius.
+If the device does not return that value, the plugin takes Celsius.
 
 ## Installation
 

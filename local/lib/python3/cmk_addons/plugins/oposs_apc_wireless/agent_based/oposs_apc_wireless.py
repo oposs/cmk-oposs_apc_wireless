@@ -3,7 +3,7 @@ from cmk.agent_based.v2 import (
     CheckResult,
     DiscoveryResult,
     Service,
-    SimpleSNMPSection,
+    SNMPSection,
     SNMPTree,
     check_levels,
     startswith,
@@ -16,10 +16,20 @@ __version__ = "0.2.0"
 Section = dict[str, dict[str, float | None]]
 
 
+# emsStatusSysTempUnits: the scale the device is set to show temperatures in
+_FAHRENHEIT = "2"
+
+
 def parse_oposs_apc_wireless(string_table: list) -> Section:
-    """Parse SNMP data from APC wireless temperature/humidity sensors."""
+    """Parse SNMP data from APC wireless temperature/humidity sensors.
+
+    The sensors report temperatures in the scale the device is set to
+    (emsStatusSysTempUnits). Without that value they are taken as Celsius.
+    """
+    sensors, units = string_table
+    fahrenheit = bool(units and units[0] and units[0][0].strip() == _FAHRENHEIT)
     section: Section = {}
-    for row in string_table:
+    for row in sensors:
         if len(row) < 3:
             continue
         name = row[0].strip()
@@ -27,6 +37,8 @@ def parse_oposs_apc_wireless(string_table: list) -> Section:
             continue
         try:
             temp = int(row[1]) / 10.0
+            if fahrenheit:
+                temp = (temp - 32.0) * 5.0 / 9.0
         except (ValueError, TypeError):
             temp = None
         try:
@@ -42,13 +54,19 @@ def parse_oposs_apc_wireless(string_table: list) -> Section:
     return section
 
 
-snmp_section_oposs_apc_wireless = SimpleSNMPSection(
+snmp_section_oposs_apc_wireless = SNMPSection(
     name="oposs_apc_wireless",
     detect=startswith(".1.3.6.1.2.1.1.2.0", ".1.3.6.1.4.1.318.1.3"),
-    fetch=SNMPTree(
-        base=".1.3.6.1.4.1.318.1.1.10.5.1.1.1",
-        oids=["3", "5", "8"],  # Name, Temperature, Humidity
-    ),
+    fetch=[
+        SNMPTree(
+            base=".1.3.6.1.4.1.318.1.1.10.5.1.1.1",
+            oids=["3", "5", "8"],  # Name, Temperature, Humidity
+        ),
+        SNMPTree(
+            base=".1.3.6.1.4.1.318.1.1.10.3.12",
+            oids=["11.0"],  # emsStatusSysTempUnits
+        ),
+    ],
     parse_function=parse_oposs_apc_wireless,
 )
 
