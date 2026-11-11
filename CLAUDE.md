@@ -14,7 +14,10 @@ Migrated from oegig-plugins to Checkmk 2.3.x v2 API.
 
 ## Architecture
 
-- One `SimpleSNMPSection` fetching wireless sensor table (name, temp, humidity)
+- One `SNMPSection` fetching the wireless sensor table (name, temp, humidity)
+  and the scalar `emsStatusSysTempUnits` (.1.3.6.1.4.1.318.1.1.10.3.12.11.0,
+  1 = Celsius, 2 = Fahrenheit); Fahrenheit readings are converted to Celsius,
+  a missing value means Celsius
 - Parse function builds dict keyed by sensor name
 - 2 `CheckPlugin` module-level variables, both item-based (temperature, humidity)
 - Temperature: default thresholds warn=25C, crit=30C

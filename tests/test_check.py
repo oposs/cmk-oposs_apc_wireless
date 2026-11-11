@@ -14,6 +14,13 @@ Checkmk's cmk/plugins/apc/agent_based/apc_netbotz_sensors.py:
 "Rack 12 top" is an NBWS100H (temperature and humidity), "Rack 12 bottom"
 an NBWS100T (temperature only), which reports a humidity of 0. Temperatures
 are tenths of a degree, humidity whole percent.
+
+The scale of the temperatures is the one the device is set to, given by
+emsStatusSysTempUnits (.1.3.6.1.4.1.318.1.1.10.3.12.11.0): celsius(1) or
+fahrenheit(2). PowerNet-MIB on wirelessSensorStatusTemperature:
+
+    "The current temperature are displayed in tenths of degrees in the scale
+    shown in the emsStatusSysTempUnits OID (Celsius or Fahrenheit)."
 """
 
 import importlib.util
@@ -33,6 +40,10 @@ SYS_OBJECT_ID = ".1.3.6.1.2.1.1.2.0"
 # Rows as the parse function receives them: name, temperature, humidity.
 TOP = ["Rack 12 top", "231", "41"]
 BOTTOM = ["Rack 12 bottom", "224", "0"]
+
+# emsStatusSysTempUnits as the parse function receives it.
+CELSIUS = [["1"]]
+FAHRENHEIT = [["2"]]
 
 TEMP_DEFAULTS = {"levels": ("fixed", (25.0, 30.0))}
 HUM_DEFAULTS = {
@@ -64,18 +75,21 @@ def _detects(spec, oid_values):
 
 
 def _fetch(check):
-    """The one SNMPTree of the section (the API stores it as a one-element list)."""
-    (tree,) = check.snmp_section_oposs_apc_wireless.fetch
-    return tree
+    """The sensor table, the first SNMPTree of the section."""
+    return check.snmp_section_oposs_apc_wireless.fetch[0]
 
 
-def _temp(check, row, params=TEMP_DEFAULTS):
-    section = check.parse_oposs_apc_wireless([row])
+def _parse(check, rows, units=CELSIUS):
+    return check.parse_oposs_apc_wireless([rows, units])
+
+
+def _temp(check, row, params=TEMP_DEFAULTS, units=CELSIUS):
+    section = _parse(check, [row], units)
     return list(check.check_oposs_apc_wireless_temperature(row[0], params, section))
 
 
 def _hum(check, row, params=HUM_DEFAULTS):
-    section = check.parse_oposs_apc_wireless([row])
+    section = _parse(check, [row])
     return list(check.check_oposs_apc_wireless_humidity(row[0], params, section))
 
 
@@ -116,15 +130,39 @@ def test_fetches_humidity_from_the_humidity_column(check):
     assert [o.column for o in fetch.oids] == ["3", "5", "8"]
 
 
+def test_fetches_the_temperature_scale(check):
+    (_sensors, units) = check.snmp_section_oposs_apc_wireless.fetch
+    assert units.base == ".1.3.6.1.4.1.318.1.1.10.3.12"
+    assert [o.column for o in units.oids] == ["11.0"]  # emsStatusSysTempUnits
+
+
 def test_parse_real_walk(check):
-    assert check.parse_oposs_apc_wireless([TOP, BOTTOM]) == {
+    assert _parse(check, [TOP, BOTTOM]) == {
         "Rack 12 top": {"temperature": 23.1, "humidity": 41.0},
         "Rack 12 bottom": {"temperature": 22.4, "humidity": None},
     }
 
 
+def test_parse_fahrenheit_device(check):
+    # The same sensors on a device set to Fahrenheit: 73.6 °F and 72.3 °F.
+    section = _parse(check, [["Rack 12 top", "736", "41"], ["Rack 12 bottom", "723", "0"]],
+                     FAHRENHEIT)
+    assert section["Rack 12 top"]["temperature"] == pytest.approx(23.1111, abs=1e-3)
+    assert section["Rack 12 bottom"]["temperature"] == pytest.approx(22.3889, abs=1e-3)
+    assert section["Rack 12 top"]["humidity"] == 41.0
+
+
+@pytest.mark.parametrize("units", [
+    [],                             # device without emsStatusSysTempUnits
+    [[""]],
+    [["3"]],                        # not in the MIB
+])
+def test_parse_without_a_known_scale_assumes_celsius(check, units):
+    assert _parse(check, [TOP], units)["Rack 12 top"]["temperature"] == 23.1
+
+
 def test_parse_negative_temperature(check):
-    section = check.parse_oposs_apc_wireless([["Freezer", "-185", "-1"]])
+    section = _parse(check, [["Freezer", "-185", "-1"]])
     assert section == {"Freezer": {"temperature": -18.5, "humidity": None}}
 
 
@@ -135,20 +173,20 @@ def test_parse_negative_temperature(check):
     ["   ", "231", "41"],
 ])
 def test_parse_skips_unusable_rows(check, row):
-    assert check.parse_oposs_apc_wireless([row]) == {}
+    assert _parse(check, [row]) == {}
 
 
 def test_parse_garbage_values(check):
-    section = check.parse_oposs_apc_wireless([["Rack 1", "n/a", ""]])
+    section = _parse(check, [["Rack 1", "n/a", ""]])
     assert section == {"Rack 1": {"temperature": None, "humidity": None}}
 
 
 def test_parse_strips_the_name(check):
-    assert list(check.parse_oposs_apc_wireless([[" Rack 12 top ", "231", "41"]])) == ["Rack 12 top"]
+    assert list(_parse(check, [[" Rack 12 top ", "231", "41"]])) == ["Rack 12 top"]
 
 
 def test_parse_empty_table(check):
-    assert check.parse_oposs_apc_wireless([]) == {}
+    assert _parse(check, []) == {}
 
 
 # ---------------------------------------------------------------------------
@@ -156,7 +194,7 @@ def test_parse_empty_table(check):
 # ---------------------------------------------------------------------------
 
 def test_discover_temperature(check):
-    section = check.parse_oposs_apc_wireless([TOP, BOTTOM])
+    section = _parse(check, [TOP, BOTTOM])
     assert list(check.discover_oposs_apc_wireless_temperature(section)) == [
         Service(item="Rack 12 top"),
         Service(item="Rack 12 bottom"),
@@ -164,18 +202,18 @@ def test_discover_temperature(check):
 
 
 def test_discover_skips_missing_values(check):
-    section = check.parse_oposs_apc_wireless([["Rack 1", "n/a", "-1"]])
+    section = _parse(check, [["Rack 1", "n/a", "-1"]])
     assert list(check.discover_oposs_apc_wireless_temperature(section)) == []
     assert list(check.discover_oposs_apc_wireless_humidity(section)) == []
 
 
 def test_discover_humidity_sensor(check):
-    section = check.parse_oposs_apc_wireless([TOP])
+    section = _parse(check, [TOP])
     assert list(check.discover_oposs_apc_wireless_humidity(section)) == [Service(item="Rack 12 top")]
 
 
 def test_temperature_only_sensor_has_no_humidity_service(check):
-    section = check.parse_oposs_apc_wireless([BOTTOM])
+    section = _parse(check, [BOTTOM])
     assert list(check.discover_oposs_apc_wireless_humidity(section)) == []
 
 
@@ -220,8 +258,21 @@ def test_temperature_without_levels(check):
     ]
 
 
+def test_temperature_fahrenheit_device(check):
+    # 86.0 °F is 30.0 °C, the default crit level.
+    assert _temp(check, ["Rack 1", "860", "41"], units=FAHRENHEIT) == [
+        Result(state=State.CRIT, summary="Temperature: 30.0 °C (warn/crit at 25.0 °C/30.0 °C)"),
+        Metric("oposs_apc_temperature", 30.0, levels=(25.0, 30.0)),
+    ]
+
+
+def test_temperature_fahrenheit_device_ok(check):
+    # 73.6 °F would be CRIT if it were read as °C.
+    assert _state(_temp(check, ["Rack 1", "736", "41"], units=FAHRENHEIT)) == State.OK
+
+
 def test_temperature_missing_item(check):
-    section = check.parse_oposs_apc_wireless([TOP])
+    section = _parse(check, [TOP])
     assert list(check.check_oposs_apc_wireless_temperature("Gone", TEMP_DEFAULTS, section)) == []
 
 
@@ -272,7 +323,7 @@ def test_humidity_not_measured(check):
 
 
 def test_humidity_missing_item(check):
-    section = check.parse_oposs_apc_wireless([TOP])
+    section = _parse(check, [TOP])
     assert list(check.check_oposs_apc_wireless_humidity("Gone", HUM_DEFAULTS, section)) == []
 
 
