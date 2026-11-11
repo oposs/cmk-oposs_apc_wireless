@@ -8,14 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### New
-- The "Temperature" services show the right value for sensors on a device
-  set to Fahrenheit. Before, a reading of 73.6 °F showed as 73.6 °C and the
-  service went CRIT; now it shows 23.1 °C. Readings, levels and graphs stay
-  in °C.
 
 ### Changed
 
 ### Fixed
+
+## 0.3.0 - 2026-11-11
+### New
+- The "Temperature" services show the right value for sensors on a device
+  set to Fahrenheit. Before, a reading of 73.6 °F showed as 73.6 °C and the
+  service went CRIT; now it shows 23.1 °C. Readings, levels and graphs stay
+  in °C.
 
 ## 0.2.0 - 2026-11-06
 ### New
