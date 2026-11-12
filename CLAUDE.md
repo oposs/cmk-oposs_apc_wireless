@@ -19,6 +19,9 @@ Migrated from oegig-plugins to Checkmk 2.3.x v2 API.
   1 = Celsius, 2 = Fahrenheit); Fahrenheit readings are converted to Celsius,
   a missing value means Celsius
 - Parse function builds dict keyed by sensor name
+- Temperature -2147483647 means the device has no reading from the sensor
+  (seen on a real NBRK0250 walk, humidity -1 alongside): the service stays,
+  the check says UNKNOWN; humidity <= 0 means not measured
 - 2 `CheckPlugin` module-level variables, both item-based (temperature, humidity)
 - Temperature: default thresholds warn=25C, crit=30C
 - Humidity: default thresholds upper warn=60%, crit=65%; lower warn=40%, crit=35%

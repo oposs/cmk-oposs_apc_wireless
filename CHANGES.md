@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 ### Fixed
+- A wireless sensor the NetBotz has no reading from had a "Temperature"
+  service that was OK and showed -214748364.7 °C. That service is now
+  UNKNOWN with "The device has no temperature reading from this sensor"
+  and records no metric.
 
 ## 0.3.0 - 2026-11-11
 ### New

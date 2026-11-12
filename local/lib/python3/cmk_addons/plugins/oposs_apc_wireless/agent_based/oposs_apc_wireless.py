@@ -2,9 +2,11 @@ from cmk.agent_based.v2 import (
     CheckPlugin,
     CheckResult,
     DiscoveryResult,
+    Result,
     Service,
     SNMPSection,
     SNMPTree,
+    State,
     check_levels,
     startswith,
 )
@@ -13,11 +15,18 @@ from cmk.agent_based.v2 import (
 # .github/repo-infra.json)
 __version__ = "0.3.0"
 
-Section = dict[str, dict[str, float | None]]
+Section = dict[str, dict[str, float | bool | None]]
 
 
 # emsStatusSysTempUnits: the scale the device is set to show temperatures in
 _FAHRENHEIT = "2"
+
+# What a NetBotz 250 reports as wirelessSensorStatusTemperature for a sensor
+# it has no reading from. Seen on a real NBRK0250 for an inactive sensor:
+# humidity -1, wirelessSensorStatusCommStatus inactive(0) and
+# wirelessSensorStatusAlarmStatus 0x1000 (sensor inactive). The MIB names
+# no such value.
+_NO_READING = -2147483647
 
 
 def parse_oposs_apc_wireless(string_table: list) -> Section:
@@ -35,10 +44,16 @@ def parse_oposs_apc_wireless(string_table: list) -> Section:
         name = row[0].strip()
         if not name:
             continue
+        no_reading = False
         try:
-            temp = int(row[1]) / 10.0
-            if fahrenheit:
-                temp = (temp - 32.0) * 5.0 / 9.0
+            raw = int(row[1])
+            if raw <= _NO_READING:
+                no_reading = True
+                temp = None
+            else:
+                temp = raw / 10.0
+                if fahrenheit:
+                    temp = (temp - 32.0) * 5.0 / 9.0
         except (ValueError, TypeError):
             temp = None
         try:
@@ -51,6 +66,8 @@ def parse_oposs_apc_wireless(string_table: list) -> Section:
         except (ValueError, TypeError):
             humidity = None
         section[name] = {"temperature": temp, "humidity": humidity}
+        if no_reading:
+            section[name]["no_reading"] = True
     return section
 
 
@@ -79,7 +96,8 @@ def discover_oposs_apc_wireless_temperature(
     section: Section,
 ) -> DiscoveryResult:
     for name, data in section.items():
-        if data.get("temperature") is not None:
+        # A sensor without a reading keeps its service, which then says so
+        if data.get("temperature") is not None or data.get("no_reading"):
             yield Service(item=name)
 
 
@@ -87,7 +105,13 @@ def check_oposs_apc_wireless_temperature(
     item: str, params: dict, section: Section,
 ) -> CheckResult:
     data = section.get(item)
-    if not data or data.get("temperature") is None:
+    if not data:
+        return
+    if data.get("no_reading"):
+        yield Result(state=State.UNKNOWN,
+                     summary="The device has no temperature reading from this sensor")
+        return
+    if data.get("temperature") is None:
         return
     yield from check_levels(
         value=data["temperature"],
