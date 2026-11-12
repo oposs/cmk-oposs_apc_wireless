@@ -13,7 +13,7 @@ from cmk.agent_based.v2 import (
 
 # Create release PR writes the released version here (version_files in
 # .github/repo-infra.json)
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 Section = dict[str, dict[str, float | bool | None]]
 
