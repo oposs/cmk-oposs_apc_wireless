@@ -2,7 +2,9 @@
 
 The sensor rows come from a real SNMP walk of the PowerNet-MIB
 wirelessSensorStatusTable (.1.3.6.1.4.1.318.1.1.10.5.1.1.1), quoted in
-Checkmk's cmk/plugins/apc/agent_based/apc_netbotz_sensors.py:
+cmk/plugins/apc/agent_based/apc_netbotz_sensors.py on Checkmk master (commit
+2e2295f8). Checkmk 2.3 has no such file, and its apc_netbotz_sensors section
+does not read the wireless sensors. The walk:
 
     .1.3.6.1.4.1.318.1.1.10.5.1.1.1.3.1 Rack 12 top     wirelessSensorStatusName
     .1.3.6.1.4.1.318.1.1.10.5.1.1.1.3.2 Rack 12 bottom
